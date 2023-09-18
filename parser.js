@@ -1,4 +1,3 @@
-import { writeFileSync } from 'fs'
 import { launch } from 'puppeteer'
 import axios from 'axios'
 import { load } from 'cheerio'
@@ -37,25 +36,25 @@ function songDict(songLink) {
   }
 }
 
+async function getHTMLContent(links) {
+  const browser = await launch({ headless: 'new' })
+  const page = await browser.newPage()
+
+  const htmlContentArray = []
+
+  for (const url of links) {
+      await page.goto(url, { waitUntil: 'networkidle0' })
+      const html = await page.content()
+      htmlContentArray.push(html)
+  }
+
+  await browser.close()
+
+  return htmlContentArray.join('\n\n')
+}
+
 async function htmlToPdf (links) {
-    const browser = await launch({ headless: 'new' })
-    const page = await browser.newPage()
-
-    const htmlContentArray = []
-
-    for (const url of links) {
-        await page.goto(url, { waitUntil: 'networkidle0' })
-        const html = await page.content()
-        htmlContentArray.push(html)
-    }
-
-    await browser.close()
-
-    const combinedHtml = htmlContentArray.join('\n\n')
-
-    writeFileSync('combined.html', combinedHtml)
-
-
+    const combinedHtml = await getHTMLContent(links)
     const pdfPath = 'cancionero.pdf'
     const browser2 = await launch({ headless: 'new' })
     const page2 = await browser2.newPage()
@@ -74,7 +73,7 @@ async function main() {
     const songDicts = songsLinks.map(songLink => songDict(songLink))
     songDicts.sort((a, b) => a.name.localeCompare(b.name))
     const printLinks = songDicts.map(song => song.print_link)
-    htmlToPdf(printLinks)
+    await htmlToPdf(printLinks)
   } catch (error) {
     console.error(error)
   }
