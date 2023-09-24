@@ -2,12 +2,10 @@ import { launch } from 'puppeteer'
 import axios from 'axios'
 import { load } from 'cheerio'
 
-const YOUR_MUSICIAN_ID = 551928421
 const CIFRACLUB_URL = 'https://www.cifraclub.com'
-const SONGS_LIST = `${CIFRACLUB_URL}/musico/${YOUR_MUSICIAN_ID}/repertorio/favoritas/`
 
-async function getSongLinks() {
-  const response = await axios.get(SONGS_LIST)
+async function getSongLinks(songs_list) {
+  const response = await axios.get(songs_list)
   const $ = load(response.data)
   const links = []
 
@@ -55,28 +53,26 @@ async function getHTMLContent(links) {
 
 async function htmlToPdf (links) {
     const combinedHtml = await getHTMLContent(links)
-    const pdfPath = 'cancionero.pdf'
     const browser2 = await launch({ headless: 'new' })
     const page2 = await browser2.newPage()
     await page2.setContent(combinedHtml)
-    const pdfOptions = {
-        path: pdfPath,
-        format: 'A5',
-    }
-    await page2.pdf(pdfOptions)
+    const pdfBlob = await page2.pdf()
     await browser2.close()
+    return pdfBlob
 }
 
-async function main() {
+async function main(musician_id) {
+  const songs_list = `${CIFRACLUB_URL}/musico/${musician_id}/repertorio/favoritas/`
   try {
-    const songsLinks = await getSongLinks()
+    const songsLinks = await getSongLinks(songs_list)
     const songDicts = songsLinks.map(songLink => songDict(songLink))
     songDicts.sort((a, b) => a.name.localeCompare(b.name))
     const printLinks = songDicts.map(song => song.print_link)
-    await htmlToPdf(printLinks)
+    const blob = await htmlToPdf(printLinks)
+    return blob
   } catch (error) {
     console.error(error)
   }
 }
 
-main()
+export default main
