@@ -5,8 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const downloadLink = document.getElementById("downloadLink");
   const errorMessageParagraph = document.getElementById("errorMessage");
   const errorMessageDiv = document.getElementById("error");
-
+  
   convertButton.addEventListener("click", async () => {
+      convertButton.disabled = true; // Disable the button during loading
+      document.getElementById("loader").style.display = "inline-block";
       const id = idInput.value;
       if (!id) {
             console.log("Missing musician_id!!!")
@@ -21,7 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             body: JSON.stringify({ musician_id: id }),
       }).then(response => {
-          console.log({ response })
+            document.getElementById("loader").style.display = "none";
+            convertButton.disabled = false;
           if (!response.ok) {
                 response.json().then(({ error }) => {
                     errorMessageDiv.style.display = "block";
