@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pdfLink = document.getElementById("pdfLink");
   const downloadLink = document.getElementById("downloadLink");
   const errorMessageParagraph = document.getElementById("errorMessage");
+  const errorMessageDiv = document.getElementById("error");
 
   convertButton.addEventListener("click", async () => {
       const id = idInput.value;
@@ -13,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
       }      
 
-      fetch('http://localhost:3000/generate-pdf', {
+      fetch('/generate-pdf', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log({ response })
           if (!response.ok) {
                 response.json().then(({ error }) => {
+                    errorMessageDiv.style.display = "block";
                     errorMessageParagraph.innerText = error
                     return
                 })
