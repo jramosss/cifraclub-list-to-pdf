@@ -16,14 +16,17 @@ app.use(express.static('public'))
 // API endpoint for PDF generation
 app.post('/generate-pdf', async (req, res) => {
     const { musician_id } = req.body
+    console.log('Received request', musician_id)
 
-    if (!musician_id) res.status(400).send('Missing musician_id')
+    if (!musician_id) return res.status(400).json({error: 'Missing musician_id'})
     
     
     try {
         // Use your Node.js logic to generate the PDF
         const pdfBlob = await generatePDF(musician_id)
+        console.log('PDF generated')
         const { Location } = await upload(pdfBlob)
+        console.log('PDF uploaded')
         res.status(200).json({ url: Location })
     } catch (error) {
         res.status(500).json({

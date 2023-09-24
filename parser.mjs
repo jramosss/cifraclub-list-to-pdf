@@ -56,7 +56,7 @@ async function htmlToPdf (links) {
     const browser2 = await launch({ headless: 'new' })
     const page2 = await browser2.newPage()
     await page2.setContent(combinedHtml)
-    const pdfBlob = await page2.pdf()
+    const pdfBlob = await page2.pdf({ format: 'A5' })
     await browser2.close()
     return pdfBlob
 }
